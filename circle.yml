@@ -1,0 +1,55 @@
+machine:
+  node:
+    version: 7.10.0
+  environment:
+    PROJECT_ID: messaging-service-180514
+    CLUSTER_NAME_PROD: messaging-service-prod
+    CLUSTER_NAME_STAGING: messaging-service-stage
+    CLOUDSDK_COMPUTE_ZONE: us-central1-a
+    DOCKER_IMAGE_NAME: gcr.io/messaging-service-180514/url-provider
+    DEBIAN_FRONTEND: noninteractive
+  services:
+    - docker
+
+dependencies:
+  pre:
+    - if [ -z $(grep version package.json |grep -o '[0-9.]*') ]; then echo Version must be specified in package.json; exit 1; fi
+    - echo "Setting up google cloud sdk..."
+    - echo ${ACCT_AUTH} | base64 --decode -i > ${HOME}//gcloud-service-key.json
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update
+    - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update kubectl
+    - sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+    - sudo /opt/google-cloud-sdk/bin/gcloud config set project $PROJECT_ID
+    - docker build -t $DOCKER_IMAGE_NAME:v$(grep version package.json |grep -o '[0-9.]*') .
+    - docker tag $DOCKER_IMAGE_NAME:v$(grep version package.json |grep -o '[0-9.]*') $DOCKER_IMAGE_NAME:latest
+
+test:
+  override:
+    - echo "No test coverage yet"
+  post:
+    - docker run -d -p 8080:80 $DOCKER_IMAGE_NAME:v$(grep version package.json |grep -o '[0-9.]*'); sleep 10
+    - curl --retry 10 --retry-delay 5 -v http://localhost:8080
+
+deployment:
+  staging:
+    branch: /(feature|fix|chore).*/
+    commands:
+      - echo "Pushing image $DOCKER_IMAGE_NAME to registry..."
+      - sudo /opt/google-cloud-sdk/bin/gcloud docker -- push $DOCKER_IMAGE_NAME
+      - sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set container/cluster $CLUSTER_NAME_STAGING
+      - sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
+      - sudo /opt/google-cloud-sdk/bin/gcloud config set container/use_client_certificate True
+      - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME_STAGING
+      - sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube
+      - kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":'"$DOCKER_IMAGE_NAME"'":"v'"$(grep version package.json |grep -o '[0-9.]*')"'"}]}}}}'
+
+  production:
+    branch: master
+    commands:
+      - sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set container/cluster $CLUSTER_NAME_PROD
+      - sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
+      - sudo /opt/google-cloud-sdk/bin/gcloud config set container/use_client_certificate True
+      - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME_PROD
+      - sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube
+      - kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":'"$DOCKER_IMAGE_NAME"'":"v'"$(grep version package.json |grep -o '[0-9.]*')"'"}]}}}}'
+
