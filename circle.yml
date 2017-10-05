@@ -41,7 +41,8 @@ deployment:
       - sudo /opt/google-cloud-sdk/bin/gcloud config set container/use_client_certificate True
       - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME_STAGING
       - sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube
-      - kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":'"$DOCKER_IMAGE_NAME"'":"v'"$(grep version package.json |grep -o '[0-9.]*')"'"}]}}}}'
+      - TAG="$(grep version package.json |grep -o '[0-9.]*')";
+      - kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":'"$DOCKER_IMAGE_NAME"'":"v'"$TAG"'"}]}}}}'
 
   production:
     branch: master
@@ -51,5 +52,6 @@ deployment:
       - sudo /opt/google-cloud-sdk/bin/gcloud config set container/use_client_certificate True
       - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME_PROD
       - sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube
-      - kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":'"$DOCKER_IMAGE_NAME"'":"v'"$(grep version package.json |grep -o '[0-9.]*')"'"}]}}}}'
+      - TAG="$(grep version package.json |grep -o '[0-9.]*')";
+      - kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":'"$DOCKER_IMAGE_NAME"'":"v'"$TAG"'"}]}}}}'
 
