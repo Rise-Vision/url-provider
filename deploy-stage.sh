@@ -15,4 +15,4 @@ TAG=$(grep version package.json |grep -o '[0-9.]*');
 echo "Tag value is: $TAG"
 
 sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube
-kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":'"$DOCKER_IMAGE_NAME"'":"v'"$TAG"'"}]}}}}'
+kubectl patch deployment url-provider -p '{"spec":{"template":{"spec":{"containers":[{"name":"url-provider","image":"'"$DOCKER_IMAGE_NAME"':v'"$TAG"'"}]}}}}'
