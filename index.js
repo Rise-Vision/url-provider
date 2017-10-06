@@ -1,11 +1,13 @@
 const http = require('http');
       port = 80;
 
+const pkg = require("./package.json");
+
 const podname = process.env.podname;
 
 const requestHandler = (request, response) => {
   response.writeHead(200, {"Content-Type": "application/json"});
-  response.end(`Url Provider: ${podname}`);
+  response.end(`Url Provider: ${podname} ${pkg.version}`);
 };
 
 const server = http.createServer(requestHandler);
