@@ -9,6 +9,9 @@ const port = process.env.UP_PORT || defaultPort;
 const app = express();
 const server = http.createServer(app);
 const podname = process.env.podname;
+const redis = require("redis-promise");
+const gkeHostname = "up-redis-master";
+const redisHost = process.env.NODE_ENV === "test" ? "127.0.0.1" : gkeHostname;
 
 app.get('/urlprovider', function(req, res) {
   res.send(`Url Provider: ${podname} ${pkg.version}`);
@@ -23,10 +26,13 @@ const start = ()=>{
     }
 
     console.log(`server is listening on ${port}`);
+
+    redis.initdb(null, redisHost);
   })
 }
 
 const stop = ()=>{
+  redis.close();
   server.close();
 }
 

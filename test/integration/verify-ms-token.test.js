@@ -26,7 +26,6 @@ describe("Provider", ()=>{
 
   afterEach(()=>{
     app.stop();
-
   });
 
   it("return success when verifying a valid ms token", (done)=>{
@@ -35,9 +34,10 @@ describe("Provider", ()=>{
       .send(msToken)
       .end((err, res) => {
         if (err) {
-          assert(false)
+          assert(false);
+        } else {
+          assert.equal(res.status, SUCCESS_CODE);
         }
-        assert.equal(res.status, SUCCESS_CODE);
         done();
       });
   });
@@ -51,6 +51,8 @@ describe("Provider", ()=>{
       .end((err, res) => {
         if (err) {
           assert.equal(res.status, SERVER_ERROR_CODE);
+        } else {
+          assert(false);
         }
         done();
       });
