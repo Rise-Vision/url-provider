@@ -32,6 +32,7 @@
     "superagent": "^3.8.1"
   },
   "dependencies": {
+    "@google-cloud/storage": "^1.4.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "ms-token-handler": "git+https://github.com/Rise-Vision/ms-token-handler.git#1.0.0",
