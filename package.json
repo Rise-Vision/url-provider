@@ -4,9 +4,9 @@
   "description": "Rise Vision Url Provider",
   "main": "index.js",
   "scripts": {
-    "test": "eslint --fix . && UP_PORT=8080 mocha -t 20000 -r test/mocha-env.js test/**/*.test.js",
-    "test-unit": "eslint . && mocha -t 20000 -r test/mocha-env.js test/unit/**",
-    "test-integration": "eslint . && UP_PORT=8080 mocha -t 20000 -r test/mocha-env.js test/integration/**",
+    "test": "eslint --fix . && UP_PORT=8080 mocha -t 5000 -r test/mocha-env.js test/**/*.test.js",
+    "test-unit": "eslint . && mocha -t 5000 -r test/mocha-env.js test/unit/**",
+    "test-integration": "eslint . && UP_PORT=8080 mocha -t 5000 -r test/mocha-env.js test/integration/**",
     "dev": "UP_PORT=8080 node index.js",
     "start": "node index.js"
   },
@@ -32,6 +32,7 @@
     "superagent": "^3.8.1"
   },
   "dependencies": {
+    "@google-cloud/storage": "^1.4.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "ms-token-handler": "git+https://github.com/Rise-Vision/ms-token-handler.git#1.0.0",

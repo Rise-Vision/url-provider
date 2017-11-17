@@ -6,14 +6,13 @@ const provider = require("../../src/provider");
 const msTokenHandler = require("ms-token-handler");
 const keyBytes = 32
 const mstokenKey = "0".repeat(keyBytes);
-const CLIENT_ERROR_CODE = 400;
-const SERVER_ERROR_CODE = 500;
-const SUCCESS_CODE = 200;
-let res = {};
+const {CLIENT_ERROR, OK, AUTH_ERROR} = require("../../src/status-codes.js");
 
 describe("Provider", ()=>{
   let resPromise = null;
   let req = {};
+  let res = {};
+  let statusCode = null;
 
   beforeEach(()=>{
     const data = {
@@ -22,15 +21,16 @@ describe("Provider", ()=>{
       filePath: "bucket/file"
     };
 
-    const msSignature = msTokenHandler.encryptAndHash(data, mstokenKey)
+    const hash = msTokenHandler.encryptAndHash(data, mstokenKey)
 
     req = {
-      body: {...data, msSignature}
+      body: {data, hash}
     };
 
+    statusCode = null;
 
     resPromise = new Promise(resolve=>{
-      res = {sendStatus: resolve, json: () => {}};
+      res = {status(code) {statusCode = code; return {send: resolve}}};
     });
   });
 
@@ -41,48 +41,52 @@ describe("Provider", ()=>{
   it("return success when verifying a valid token", ()=>{
     provider.handleRequest(req, res);
 
-    return resPromise.then(code=>{
-      assert.equal(code, SUCCESS_CODE)
+    return resPromise.then(signedUrl=>{
+      assert(signedUrl.includes("Signature="));
+      assert.equal(statusCode, OK);
     });
   });
 
   it("return unsuccess when verifying an invalid token", ()=>{
-    req.body.msSignature = "wrong";
+    req.body.hash = "wrong";
     provider.handleRequest(req, res);
 
-    return resPromise.then(code=>{
-      assert.equal(code, SERVER_ERROR_CODE)
+    return resPromise.then(err=>{
+      assert(err.includes("Invalid MS Token"));
+      assert.equal(statusCode, AUTH_ERROR);
     });
   });
 
 
   it("return failure when it is missing displayId", ()=>{
-    assert(Reflect.deleteProperty(req.body, "displayId"));
+    assert(Reflect.deleteProperty(req.body.data, "displayId"));
 
     provider.handleRequest(req, res);
 
-    return resPromise.then(code=>{
-      assert.equal(code, CLIENT_ERROR_CODE)
+    return resPromise.then(err=>{
+      assert(err.includes("Invalid input"));
     });
   });
 
   it("return failure when it is missing timestamp", ()=>{
-    assert(Reflect.deleteProperty(req.body, "timestamp"));
+    assert(Reflect.deleteProperty(req.body.data, "timestamp"));
 
     provider.handleRequest(req, res);
 
-    return resPromise.then(code=>{
-      assert.equal(code, CLIENT_ERROR_CODE)
+    return resPromise.then(err=>{
+      assert.equal(statusCode, CLIENT_ERROR)
+      assert(err.includes("Invalid input"));
     });
   });
 
   it("return failure when it is missing filePath", ()=>{
-    assert(Reflect.deleteProperty(req.body, "filePath"));
+    assert(Reflect.deleteProperty(req.body.data, "filePath"));
 
     provider.handleRequest(req, res);
 
-    return resPromise.then(code=>{
-      assert.equal(code, CLIENT_ERROR_CODE)
+    return resPromise.then(err=>{
+      assert.equal(statusCode, CLIENT_ERROR)
+      assert(err.includes("Invalid input"));
     });
   });
 
@@ -91,8 +95,9 @@ describe("Provider", ()=>{
 
     provider.handleRequest(req, res);
 
-    return resPromise.then(code=>{
-      assert.equal(code, CLIENT_ERROR_CODE)
+    return resPromise.then(err=>{
+      assert.equal(statusCode, CLIENT_ERROR)
+      assert(err.includes("Invalid input"));
     });
   });
 });
