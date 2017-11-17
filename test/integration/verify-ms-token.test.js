@@ -34,6 +34,7 @@ describe("Provider : Integration", ()=>{
       if (err) {
         assert(false);
       } else {
+        assert(res.text.includes("Signature="));
         assert.equal(res.status, OK);
       }
       done();

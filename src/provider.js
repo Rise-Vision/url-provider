@@ -22,7 +22,7 @@ const verifyMSToken = (body) => {
 }
 
 const getSignedURL = (body) => {
-  return Promise.resolve(urlSigner.sign(body));
+  return urlSigner.sign(body);
 }
 
 const handleRequest = (req, res) => {
@@ -30,7 +30,7 @@ const handleRequest = (req, res) => {
   validateBody(req.body)
   .then(verifyMSToken)
   .then(getSignedURL)
-  .then(url=>res.status(OK).send(url))
+  .then(url=>res.status(OK).send(url[0]))
   .catch(error=>{
     console.log("Error when providing an URL", error);
     res.status(error.code || SERVER_ERROR).send(error.msg);
