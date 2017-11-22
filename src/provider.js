@@ -8,7 +8,8 @@ module.exports = {
   handleRequest(req, res) {
     console.log(`Request Received ${JSON.stringify(req.body)}`);
     validateBody(req.body)
-    .then(verifyMSToken)
+    .then(preventMSTokenReuse)
+    .then(verifyMSTokenHash)
     .then(getSignedURL)
     .then(url=>res.status(OK).send(url[0]))
     .catch(error=>{
@@ -26,7 +27,11 @@ function validateBody(body) {
   return Promise.resolve(body);
 }
 
-function verifyMSToken(body) {
+function preventMSTokenReuse(body) {
+  return Promise.resolve(body);
+}
+
+function verifyMSTokenHash(body) {
   return msTokenHandler.verify(body.data, body.hash, keyEnv)
     ? Promise.resolve(body)
     : Promise.reject({
