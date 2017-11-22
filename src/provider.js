@@ -1,8 +1,10 @@
 const msTokenHandler = require("ms-token-handler");
+const redis = require("redis-promise");
 const urlSigner = require("./url-signer.js");
 const keyBytes = 32;
 const keyEnv = process.env.MSTOKEN_KEY || "0".repeat(keyBytes);
 const {CLIENT_ERROR, OK, AUTH_ERROR, SERVER_ERROR} = require("./status-codes.js");
+const sixWeeksSecs = 60 * 60 * 24 * 7 * 6; // eslint-disable-line no-magic-numbers
 
 module.exports = {
   handleRequest(req, res) {
@@ -28,7 +30,15 @@ function validateBody(body) {
 }
 
 function preventMSTokenReuse(body) {
-  return Promise.resolve(body);
+  return redis.peekKey(body.hash)
+  .then(exists=>{
+    if (exists) {return Promise.reject({
+      code: AUTH_ERROR, msg: "Duplicate token"
+    });}
+
+    redis.touchKey(body.hash, {expirySeconds: sixWeeksSecs});
+    return Promise.resolve(body);
+  });
 }
 
 function verifyMSTokenHash(body) {
