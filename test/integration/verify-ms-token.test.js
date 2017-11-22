@@ -4,11 +4,20 @@ const app = require("../../src/app");
 const msTokenHandler = require("ms-token-handler");
 const request = require("superagent");
 const keyBytes = 32
+const redis = require("redis-promise");
 const mstokenKey = "0".repeat(keyBytes);
 const {OK, AUTH_ERROR} = require("../../src/status-codes.js");
 let msToken = {};
 
 describe("Provider : Integration", ()=>{
+  before(()=>{
+    redis.initdb(null, "127.0.0.1");
+    return redis.eraseEntireDb();
+  });
+
+  after(()=>{
+    redis.close();
+  });
 
   beforeEach(()=>{
     app.start();
@@ -53,6 +62,31 @@ describe("Provider : Integration", ()=>{
         assert(false);
       }
       done();
+    });
+  });
+
+  it("return failure when reusing a token", ()=>{
+    return redis.eraseEntireDb()
+    .then(()=>{
+      return new Promise((res, rej)=>{
+        request.post("http://localhost:8080/urlprovider")
+        .send(msToken)
+        .end(err => {
+          if (err) {return rej("Should have worked on the first token use");}
+          res();
+        });
+      });
+    })
+    .then(()=>{
+      return new Promise((res, rej)=>{
+        request.post("http://localhost:8080/urlprovider")
+        .send(msToken)
+        .end(err => {
+          if (!err) {return rej("Should not have worked on token reuse");}
+          assert.equal(err.response.text, "Duplicate token");
+          res();
+        });
+      });
     });
   });
 });

@@ -1,6 +1,8 @@
 /* eslint-env mocha */
 /* eslint max-statements: ["error", 10, { "ignoreTopLevelFunctions": true }] */
 const assert = require("assert");
+const redis = require("redis-promise");
+const urlSigner = require("../../src/url-signer.js");
 const simple = require("simple-mock");
 const provider = require("../../src/provider");
 const msTokenHandler = require("ms-token-handler");
@@ -22,6 +24,10 @@ describe("Provider", ()=>{
     };
 
     const hash = msTokenHandler.encryptAndHash(data, mstokenKey)
+
+    simple.mock(redis, "touchKey").resolveWith();
+    simple.mock(redis, "peekKey").resolveWith();
+    simple.mock(urlSigner, "sign").resolveWith(["fake-url&Signature=fake"]);
 
     req = {
       body: {data, hash}
