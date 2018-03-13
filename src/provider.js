@@ -1,3 +1,4 @@
+const logger = require("./logger.js");
 const msTokenHandler = require("ms-token-handler");
 const redis = require("redis-promise");
 const urlSigner = require("./url-signer.js");
@@ -8,7 +9,7 @@ const sixWeeksSecs = 60 * 60 * 24 * 7 * 6; // eslint-disable-line no-magic-numbe
 
 module.exports = {
   handleRequest(req, res) {
-    console.log(`Request Received ${JSON.stringify(req.body)}`);
+    logger.log(`Request Received ${JSON.stringify(req.body)}`);
     validateBody(req.body)
     .then(preventMSTokenReuse)
     .then(verifyMSTokenHash)
