@@ -3,7 +3,7 @@ version: 2
 jobs:
   "test":
     docker: &DOCKERIMAGE
-      - image: jenkinsrise/cci-v2-docker-gcloud:0.0.8
+      - image: jenkinsrise/gcloud-nodejs-npm-redis:latest
     steps:
       - checkout
       - restore_cache:
@@ -16,8 +16,7 @@ jobs:
       - run: "echo ${ACCT_AUTH} | base64 -d > /${HOME}/gcloud-service-key.json"
       - run: GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json npm test
   "setup_package_version":
-    docker: &DOCKERIMAGE
-      - image: jenkinsrise/cci-v2-docker-gcloud:0.0.8
+    docker: *DOCKERIMAGE
     steps:
       - checkout
       - run: if [ -z $(grep version package.json |grep -o '[0-9.]*') ]; then echo Version must be specified in package.json; exit 1; fi
