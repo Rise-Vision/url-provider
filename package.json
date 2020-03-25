@@ -1,10 +1,10 @@
 {
   "name": "url-provider",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Rise Vision Url Provider",
   "main": "index.js",
   "scripts": {
-    "test": "eslint --fix . && UP_PORT=8080 mocha -t 5000 -r test/mocha-env.js test/**/*.test.js",
+    "test": "eslint --fix . && UP_PORT=8080 mocha -t 5000 -exit -r test/mocha-env.js test/**/*.test.js",
     "test-unit": "eslint . && mocha -t 5000 -r test/mocha-env.js test/unit/**",
     "test-integration": "eslint . && UP_PORT=8080 mocha -t 5000 -r test/mocha-env.js test/integration/**",
     "dev": "UP_PORT=8080 node index.js",
@@ -21,18 +21,18 @@
   },
   "homepage": "https://github.com/Rise-Vision/url-provider#readme",
   "devDependencies": {
-    "eslint": "^4.11.0",
+    "eslint": "^6.8.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
-    "mocha": "^4.0.1",
+    "mocha": "^7.1.1",
     "simple-mock": "^0.8.0",
-    "superagent": "^3.8.1"
+    "superagent": "^5.2.2"
   },
   "dependencies": {
-    "@google-cloud/storage": "^1.4.0",
+    "@google-cloud/storage": "^4.6.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "ms-token-handler": "git+https://github.com/Rise-Vision/ms-token-handler.git#1.0.0",
