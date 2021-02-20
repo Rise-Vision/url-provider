@@ -31,15 +31,18 @@ describe("Provider : Integration", ()=>{
     msToken = {data, hash};
   });
 
+  it("return success (with cors) when verifying a valid ms token", (done)=>{
+    const origin = "something.risevision.com";
 
-  it("return success when verifying a valid ms token", (done)=>{
     request.post("http://localhost:8080/urlprovider")
+    .set("origin", origin)
     .send(msToken)
     .end((err, res) => {
       if (err) {
         assert(false);
       } else {
         assert(res.text.includes("Signature="));
+        assert.equal(res.headers["access-control-allow-origin"], origin);
         assert.equal(res.status, OK);
       }
       done();
