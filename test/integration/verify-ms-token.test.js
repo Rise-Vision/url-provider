@@ -11,16 +11,15 @@ let msToken = {};
 
 describe("Provider : Integration", ()=>{
   before(()=>{
-    redis.initdb(null, "127.0.0.1");
-    return redis.eraseEntireDb();
+    return app.start()
+    .then(()=>redis.eraseEntireDb());
   });
 
   after(()=>{
-    redis.close();
+    app.stop();
   });
 
   beforeEach(()=>{
-    app.start();
     const data = {
       displayId: "213321",
       timestamp: 32131234,
@@ -32,9 +31,6 @@ describe("Provider : Integration", ()=>{
     msToken = {data, hash};
   });
 
-  afterEach(()=>{
-    app.stop();
-  });
 
   it("return success when verifying a valid ms token", (done)=>{
     request.post("http://localhost:8080/urlprovider")

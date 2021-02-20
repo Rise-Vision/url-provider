@@ -20,15 +20,19 @@ app.get('/urlprovider', function(req, res) {
 app.post('/urlprovider', jsonParser, provider.handleRequest);
 
 const start = ()=>{
-  server.listen(port, (err) => {
-    if (err) {
-      return console.log('something bad happened', err);
-    }
+  return new Promise((res, rej)=>{
+    server.listen(port, (err) => {
+      if (err) {
+        console.log('something bad happened', err);
+        return rej(err);
+      }
 
-    console.log(`server is listening on ${port}`);
+      console.log(`server is listening on ${port}`);
 
-    redis.initdb(null, redisHost);
-  })
+      redis.initdb(null, redisHost);
+      res();
+    });
+  });
 }
 
 const stop = ()=>{
