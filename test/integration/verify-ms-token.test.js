@@ -11,16 +11,15 @@ let msToken = {};
 
 describe("Provider : Integration", ()=>{
   before(()=>{
-    redis.initdb(null, "127.0.0.1");
-    return redis.eraseEntireDb();
+    return app.start()
+    .then(()=>redis.eraseEntireDb());
   });
 
   after(()=>{
-    redis.close();
+    app.stop();
   });
 
   beforeEach(()=>{
-    app.start();
     const data = {
       displayId: "213321",
       timestamp: 32131234,
@@ -32,18 +31,18 @@ describe("Provider : Integration", ()=>{
     msToken = {data, hash};
   });
 
-  afterEach(()=>{
-    app.stop();
-  });
+  it("return success (with cors) when verifying a valid ms token", (done)=>{
+    const origin = "something.risevision.com";
 
-  it("return success when verifying a valid ms token", (done)=>{
     request.post("http://localhost:8080/urlprovider")
+    .set("origin", origin)
     .send(msToken)
     .end((err, res) => {
       if (err) {
         assert(false);
       } else {
         assert(res.text.includes("Signature="));
+        assert.equal(res.headers["access-control-allow-origin"], origin);
         assert.equal(res.status, OK);
       }
       done();

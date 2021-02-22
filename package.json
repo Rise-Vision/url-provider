@@ -34,6 +34,7 @@
   "dependencies": {
     "@google-cloud/storage": "^4.6.0",
     "body-parser": "^1.18.2",
+    "cors": "^2.8.5",
     "express": "^4.16.2",
     "ms-token-handler": "git+https://github.com/Rise-Vision/ms-token-handler.git#1.0.0",
     "redis-promise": "git+https://github.com/Rise-Vision/redis-promise.git#1.1.0"

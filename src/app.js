@@ -7,11 +7,14 @@ const jsonParser = bodyParser.json();
 const defaultPort = 80;
 const port = process.env.UP_PORT || defaultPort;
 const app = express();
+const cors = require("cors");
 const server = http.createServer(app);
 const podname = process.env.podname;
 const redis = require("redis-promise");
 const gkeHostname = "up-redis-master";
 const redisHost = process.env.NODE_ENV === "test" ? "127.0.0.1" : gkeHostname;
+
+app.use(cors({origin: /\.risevision\.com(:.*)?$/}));
 
 app.get('/urlprovider', function(req, res) {
   res.send(`Url Provider: ${podname} ${pkg.version}`);
@@ -20,15 +23,19 @@ app.get('/urlprovider', function(req, res) {
 app.post('/urlprovider', jsonParser, provider.handleRequest);
 
 const start = ()=>{
-  server.listen(port, (err) => {
-    if (err) {
-      return console.log('something bad happened', err);
-    }
+  return new Promise((res, rej)=>{
+    server.listen(port, (err) => {
+      if (err) {
+        console.log('something bad happened', err);
+        return rej(err);
+      }
 
-    console.log(`server is listening on ${port}`);
+      console.log(`server is listening on ${port}`);
 
-    redis.initdb(null, redisHost);
-  })
+      redis.initdb(null, redisHost);
+      res();
+    });
+  });
 }
 
 const stop = ()=>{
